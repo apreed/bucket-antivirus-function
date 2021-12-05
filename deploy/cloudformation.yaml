@@ -1,6 +1,6 @@
 ---
   AWSTemplateFormatVersion: '2010-09-09'
-
+  Transform: AWS::Serverless-2016-10-31
   Description: Bucket Antivirus Quickstart Template
 
   Parameters:
@@ -23,6 +23,17 @@
     publicBucket: !Equals [ !Ref AVBucketType, "public" ]
 
   Resources:
+
+    ClamavLambdaLayer:
+      Type: AWS::Serverless::LayerVersion
+      Properties:
+        LayerName: ClamAvLayer
+        Description: Contains base code for all ClamAV consuming functions
+        ContentUri: ../src/clamav_layer
+        CompatibleRuntimes:
+          - python3.8
+        LicenseInfo: 'Available under the Apache2 license.'
+        RetentionPolicy: Retain
 
     S3BucketAVDefinitions:
       Type: AWS::S3::Bucket
@@ -196,19 +207,14 @@
                 - !Sub [ "arn:aws:s3:::${BucketName}", { BucketName: !Ref S3BucketAVDefinitions } ]
 
     LambdaAVUpdateDefinitions:
-      Type: AWS::Lambda::Function
+      Type: AWS::Serverless::Function
       Properties:
         FunctionName: avUpdateDefinitions
         Description: LambdaFunction to update the AntiVirus definitions in the AV Definitions bucket.
         Runtime: python3.7
-        Code:
-          ZipFile: |
-            import json
-            def lambda_handler(event, context):
-                return {
-                    'statusCode': 200, 'body': json.dumps('Hello from Lambda!')
-                }
-        Handler: "update.lambda_handler"
+        Code: ../src/definitions_lambda
+        Handler: update.lambda_handler
+        Layers: !Ref ClamavLambdaLayer
         MemorySize: 1024
         Timeout: 300
         Role: !GetAtt [ IamRoleAVDefinitions, Arn ]
@@ -243,19 +249,14 @@
         SourceArn: !Sub ${LambdaAVUpdateDefinitionsSchedule.Arn}
 
     LambdaAVScanner:
-      Type: AWS::Lambda::Function
+      Type: AWS::Serverless::Function
       Properties:
         FunctionName: avScanner
         Description: LambdaFunction to scan newly uploaded objects in S3.
         Runtime: python3.7
-        Code:
-          ZipFile: |
-            import json
-            def lambda_handler(event, context):
-                return {
-                    'statusCode': 200, 'body': json.dumps('Hello from Lambda!')
-                }
-        Handler: "scan.lambda_handler"
+        Code: ../src/scan_lambda
+        Handler: scan.lambda_handler
+        Layers: !Ref ClamavLambdaLayer
         MemorySize: 1500
         Timeout: 300
         Role: !GetAtt [ IamRoleAVScanner, Arn ]
