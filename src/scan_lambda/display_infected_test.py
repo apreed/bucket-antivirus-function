@@ -19,7 +19,8 @@ import unittest
 import botocore.session
 from botocore.stub import Stubber
 
-import os, sys
+import os
+import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", 'clamav_layer'))
 sys.path.append(os.path.dirname(__file__))
 
