@@ -133,4 +133,4 @@ class TestDisplayInfected(unittest.TestCase):
                 }
             ]
         }
-        self.assertEquals(s3_event, expected_s3_event)
+        self.assertEqual(s3_event, expected_s3_event)
