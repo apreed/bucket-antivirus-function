@@ -1,0 +1,20 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+
+[dev-packages]
+boto3 = "*"
+coverage = "*"
+mock = "==3.0.5"
+nose = "*"
+pytest = "*"
+flake8 = "*"
+pytz = "*"
+datadog = "*"
+pytest-cov = "*"
+
+[requires]
+python_version = "3.8"
